@@ -1,4 +1,5 @@
 "use server";
+import { redirect } from "next/navigation";
 import { v4 as uuidv4 } from "uuid";
 
 async function notifyMake(rut: string, status: "Success" | "Rejected") {
@@ -72,9 +73,10 @@ export async function ActionToken(formData: FormData) {
     );
 
     if (!tokenResponse.ok) {
-      throw new Error(
-        `Error al obtener el token de la tarjeta: ${tokenResponse.status}`
-      );
+      return {
+        status: "error",
+        message: "Error al obtener el token de tarjeta",
+      };
     }
 
     const tokenData = await tokenResponse.json();
@@ -92,9 +94,7 @@ export async function ActionToken(formData: FormData) {
     );
 
     if (!customerSearchResponse.ok) {
-      throw new Error(
-        `Error al buscar el cliente: ${customerSearchResponse.status}`
-      );
+      return { status: "error", message: "Error al buscar el cliente" };
     }
 
     const customerSearchData = await customerSearchResponse.json();
@@ -125,9 +125,7 @@ export async function ActionToken(formData: FormData) {
       );
 
       if (!newCustomerResponse.ok) {
-        throw new Error(
-          `Error al crear el cliente: ${newCustomerResponse.status}`
-        );
+        return { status: "error", message: "Error al crear el cliente" };
       }
 
       const newCustomerData = await newCustomerResponse.json();
@@ -158,7 +156,7 @@ export async function ActionToken(formData: FormData) {
     );
 
     if (!paymentResponse.ok) {
-      throw new Error(`Error al procesar el pago: ${paymentResponse.status}`);
+      return { status: "error", message: "Error al procesar el pago" };
     }
 
     const paymentData = await paymentResponse.json();
@@ -170,13 +168,14 @@ export async function ActionToken(formData: FormData) {
       await notifyMake(rut, "Rejected");
     }
 
-    return paymentData;
+    return { status: "success", message: "Pago procesado correctamente" };
   } catch (error) {
-    console.error("Error al procesar el pago:", error);
-
     // Notificar a Make.com en caso de error
     await notifyMake(rut, "Rejected");
-
-    throw error;
+    return {
+      status: "error",
+      message: "Error al procesar el pago",
+      err: error,
+    };
   }
 }

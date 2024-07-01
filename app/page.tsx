@@ -2,9 +2,8 @@
 
 import React, { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { set, useForm } from "react-hook-form";
 import { z } from "zod";
-import { Button } from "@/components/ui/button";
 import {
   Form,
   FormControl,
@@ -22,11 +21,13 @@ import {
   CreditCardIcon,
   AlertCircleIcon,
   DollarSignIcon,
+  Loader2,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import Image from "next/image";
 import { ActionToken } from "@/actions";
-import { ActionButton } from "@/components/action-button";
+import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 
 // Definición del tipo para los parámetros de búsqueda
 type SearchParams = {
@@ -58,10 +59,10 @@ const cardFormSchema = z.object({
   expirationDate: z
     .string()
     .regex(/^(0[1-9]|1[0-2])\/\d{2}$/, {
-      message: "Fecha de expiración inválida (MM/YY)",
+      message: "Fecha de expiración inválida (MM/YY)2",
     })
-    .min(5, { message: "Fecha de expiración inválida (MM/YY)" })
-    .max(5, { message: "Fecha de expiración inválida (MM/YY)" }),
+    .min(5, { message: "Fecha de expiración inválida (MM/YY)3" })
+    .max(5, { message: "Fecha de expiración inválida (MM/YY)1" }),
   cvv: z
     .string()
     .min(3, { message: "CVV inválido" })
@@ -226,6 +227,7 @@ export default function PaymentGateway({
 }: {
   searchParams: SearchParams;
 }) {
+  const router = useRouter();
   const [cardData, setCardData] = useState({
     cardNumber: "",
     cardName: "",
@@ -233,7 +235,10 @@ export default function PaymentGateway({
     cvv: "",
   });
 
-  const cardForm = useForm<z.infer<typeof cardFormSchema>>({
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
+
+  const form = useForm<z.infer<typeof cardFormSchema>>({
     resolver: zodResolver(cardFormSchema),
     defaultValues: {
       cardNumber: "",
@@ -243,47 +248,71 @@ export default function PaymentGateway({
     },
   });
 
-  async function onSubmit(values: z.infer<typeof cardFormSchema>) {}
+  const onSubmit = async (values: z.infer<typeof cardFormSchema>) => {
+    setLoading(true);
+    setError(false);
+    console.log("Form values:", values);
+
+    const formData = new FormData();
+    formData.append("RUT", searchParams.answer_2);
+    formData.append("email", searchParams.invitee_email);
+    formData.append("first_name", searchParams.invitee_first_name);
+    formData.append("last_name", searchParams.invitee_last_name);
+    formData.append("amount", searchParams.answer_6);
+    formData.append("rut", searchParams.answer_2);
+    formData.append("cardNumber", values.cardNumber);
+    formData.append("cardName", values.cardName);
+    formData.append("expirationDate", values.expirationDate);
+    formData.append("cvv", values.cvv);
+
+    try {
+      const result = await ActionToken(formData);
+      // Manejar el resultado de ActionToken
+      console.log("ActionToken result:", result);
+      if (result.status === "error") {
+        setLoading(false);
+        setError(true);
+      } else {
+        setLoading(false);
+        router.push("/success");
+      }
+    } catch (error) {
+      console.error("Error al procesar el pago:", error);
+    }
+  };
 
   const handleInputChange = (field: string, value: string) => {
     if (field === "expirationDate") {
-      // Permitir borrar el "/"
       if (value.length === 2 && cardData.expirationDate.length === 3) {
         const newValue = value.slice(0, 1);
         setCardData((prev) => ({ ...prev, [field]: newValue }));
-        cardForm.setValue("expirationDate", newValue);
+        form.setValue("expirationDate", newValue);
         return;
       }
 
-      // Eliminar cualquier caracter que no sea número, excepto "/"
       const cleanedValue = value.replace(/[^\d/]/g, "");
-
-      // Formatear automáticamente
       let formattedValue = cleanedValue;
       if (cleanedValue.length > 2 && !cleanedValue.includes("/")) {
         formattedValue =
           cleanedValue.slice(0, 2) + "/" + cleanedValue.slice(2, 4);
       }
 
-      // Limitar a 5 caracteres (MM/YY)
       formattedValue = formattedValue.slice(0, 5);
-
-      // Actualizamos tanto cardData como el valor del campo del formulario
       setCardData((prev) => ({ ...prev, [field]: formattedValue }));
-      cardForm.setValue("expirationDate", formattedValue);
+      form.setValue("expirationDate", formattedValue);
     } else {
       setCardData((prev) => ({ ...prev, [field]: value }));
+      // @ts-ignore
+      form.setValue(field, value);
     }
   };
 
   return (
     <div className="flex min-h-screen bg-gray-100">
-      {/* Lado izquierdo: Información de la reserva */}
       <div className="w-1/2 p-8 overflow-y-auto self-center">
         <ReservationInfo searchParams={searchParams} />
       </div>
 
-      {/* Lado derecho: Formulario de pago y simulación de tarjeta */}
       <div className="w-1/2 bg-white p-8 shadow-lg flex flex-col justify-center items-center">
         <Image
           src="/logo3 (1).png"
@@ -295,8 +324,8 @@ export default function PaymentGateway({
         <CreditCard cardData={cardData} />
         <div className="w-full max-w-md">
           <h2 className="text-2xl font-bold mb-6">Datos de Pago</h2>
-          <Form {...cardForm}>
-            <form action={ActionToken} className="space-y-4">
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <input
                 className="hidden"
                 name="RUT"
@@ -335,7 +364,7 @@ export default function PaymentGateway({
               />
 
               <FormField
-                control={cardForm.control}
+                control={form.control}
                 name="cardNumber"
                 render={({ field }) => (
                   <FormItem>
@@ -357,7 +386,7 @@ export default function PaymentGateway({
                 )}
               />
               <FormField
-                control={cardForm.control}
+                control={form.control}
                 name="cardName"
                 render={({ field }) => (
                   <FormItem>
@@ -378,7 +407,7 @@ export default function PaymentGateway({
               />
               <div className="flex space-x-4">
                 <FormField
-                  control={cardForm.control}
+                  control={form.control}
                   name="expirationDate"
                   render={({ field }) => (
                     <FormItem className="flex-1">
@@ -399,7 +428,7 @@ export default function PaymentGateway({
                   )}
                 />
                 <FormField
-                  control={cardForm.control}
+                  control={form.control}
                   name="cvv"
                   render={({ field }) => (
                     <FormItem className="flex-1">
@@ -420,9 +449,15 @@ export default function PaymentGateway({
                   )}
                 />
               </div>
-              <ActionButton className="w-full bg-[#06196C] hover:bg-[#050E3A] text-white">
-                Pagar
-              </ActionButton>
+              <Button className="w-full bg-[#06196C] hover:bg-[#050E3A] text-white">
+                {loading ? <Loader2 className="animate-spin" /> : "Pagar"}
+              </Button>
+              {error && (
+                <div className="text-red-500 text-center">
+                  Ocurrió un error al procesar el pago, por favor intenta
+                  nuevamente.
+                </div>
+              )}
             </form>
           </Form>
         </div>
