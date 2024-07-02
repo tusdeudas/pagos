@@ -1,5 +1,4 @@
 "use server";
-import { redirect } from "next/navigation";
 import { v4 as uuidv4 } from "uuid";
 
 async function notifyMake(rut: string, status: "Success" | "Rejected") {
@@ -46,13 +45,13 @@ export async function ActionToken(formData: FormData) {
   const headers = {
     "Content-Type": "application/json",
     Authorization:
-      "Bearer TEST-933291264399268-062811-622a1ff510efa387f2dc6bc2660496bc-1874139806",
+      "Bearer APP_USR-933291264399268-062811-007eaee914a3080c767a882d99ace8b3-1874139806",
   };
 
   try {
     // Primer fetch: Obtener el token de la tarjeta
     const tokenResponse = await fetch(
-      `https://api.mercadopago.com/v1/card_tokens?public_key=TEST-e02fd76a-22f5-40a7-bc0f-2a0c8bc23cc3`,
+      `https://api.mercadopago.com/v1/card_tokens?public_key=APP_USR-c1813a37-bfa8-46ad-bf9f-9368a4117eab`,
       {
         method: "POST",
         headers,

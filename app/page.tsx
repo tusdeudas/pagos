@@ -308,158 +308,139 @@ export default function PaymentGateway({
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-100">
-      <div className="w-1/2 p-8 overflow-y-auto self-center">
-        <ReservationInfo searchParams={searchParams} />
+    <div className="flex flex-col lg:flex-row min-h-screen bg-gray-100">
+      {/* Lado izquierdo: Información de la reserva */}
+      <div className="w-full lg:w-1/2 p-4 overflow-y-auto my-auto">
+        <div className="h-full overflow-y-auto pr-4">
+          <ReservationInfo searchParams={searchParams} />
+        </div>
       </div>
 
-      <div className="w-1/2 bg-white p-8 shadow-lg flex flex-col justify-center items-center">
-        <Image
-          src="/logo3 (1).png"
-          width={300}
-          height={300}
-          alt="Logo"
-          className=" mb-8"
-        />
-        <CreditCard cardData={cardData} />
-        <div className="w-full max-w-md">
-          <h2 className="text-2xl font-bold mb-6">Datos de Pago</h2>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <input
-                className="hidden"
-                name="RUT"
-                readOnly
-                value={searchParams.answer_2}
-              />
-              <input
-                className="hidden"
-                name="email"
-                readOnly
-                value={searchParams.invitee_email}
-              />
-              <input
-                className="hidden"
-                name="first_name"
-                readOnly
-                value={searchParams.invitee_first_name}
-              />
-              <input
-                className="hidden"
-                name="last_name"
-                readOnly
-                value={searchParams.invitee_last_name}
-              />
-              <input
-                className="hidden"
-                name="amount"
-                readOnly
-                value={searchParams.answer_6}
-              />
-              <input
-                className="hidden"
-                name="rut"
-                readOnly
-                value={searchParams.answer_2}
-              />
+      <div className="w-full lg:w-1/2 bg-white p-4 shadow-lg flex flex-col items-center justify-between">
+        <div className="w-full max-w-md flex flex-col items-center my-auto">
+          <div className="flex-shrink-0 mb-4 hidden h-860:block">
+            <Image
+              src="/logo3 (1).png"
+              width={200}
+              height={200}
+              alt="Logo"
+              className="mb-4"
+            />
+          </div>
 
-              <FormField
-                control={form.control}
-                name="cardNumber"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Número de Tarjeta</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="1234 5678 9012 3456"
-                        maxLength={16}
-                        minLength={16}
-                        {...field}
-                        onChange={(e) => {
-                          field.onChange(e);
-                          handleInputChange("cardNumber", e.target.value);
-                        }}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="cardName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Nombre en la Tarjeta</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Juan Pérez"
-                        {...field}
-                        onChange={(e) => {
-                          field.onChange(e);
-                          handleInputChange("cardName", e.target.value);
-                        }}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <div className="flex space-x-4">
+          <div className="w-full mb-6">
+            <CreditCard cardData={cardData} />
+          </div>
+          <div className="w-full">
+            <h2 className="text-2xl font-bold mb-4 text-center">
+              Datos de Pago
+            </h2>
+            <Form {...form}>
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="space-y-4"
+              >
                 <FormField
                   control={form.control}
-                  name="expirationDate"
+                  name="cardNumber"
                   render={({ field }) => (
-                    <FormItem className="flex-1">
-                      <FormLabel>Fecha de Expiración</FormLabel>
+                    <FormItem>
+                      <FormLabel>Número de Tarjeta</FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="MM/YY"
-                          {...field}
-                          onChange={(e) => {
-                            handleInputChange("expirationDate", e.target.value);
-                          }}
-                          value={cardData.expirationDate}
-                          maxLength={5}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="cvv"
-                  render={({ field }) => (
-                    <FormItem className="flex-1">
-                      <FormLabel>CVV</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="123"
+                          placeholder="1234 5678 9012 3456"
+                          maxLength={16}
+                          minLength={16}
                           {...field}
                           onChange={(e) => {
                             field.onChange(e);
-                            handleInputChange("cvv", e.target.value);
+                            handleInputChange("cardNumber", e.target.value);
                           }}
-                          maxLength={3}
                         />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
-              </div>
-              <Button className="w-full bg-[#06196C] hover:bg-[#050E3A] text-white">
-                {loading ? <Loader2 className="animate-spin" /> : "Pagar"}
-              </Button>
-              {error && (
-                <div className="text-red-500 text-center">
-                  Ocurrió un error al procesar el pago, por favor intenta
-                  nuevamente.
+                <FormField
+                  control={form.control}
+                  name="cardName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Nombre en la Tarjeta</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Juan Pérez"
+                          {...field}
+                          onChange={(e) => {
+                            field.onChange(e);
+                            handleInputChange("cardName", e.target.value);
+                          }}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
+                  <FormField
+                    control={form.control}
+                    name="expirationDate"
+                    render={({ field }) => (
+                      <FormItem className="flex-1">
+                        <FormLabel>Fecha de Expiración</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="MM/YY"
+                            {...field}
+                            onChange={(e) => {
+                              handleInputChange(
+                                "expirationDate",
+                                e.target.value
+                              );
+                            }}
+                            value={cardData.expirationDate}
+                            maxLength={5}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="cvv"
+                    render={({ field }) => (
+                      <FormItem className="flex-1">
+                        <FormLabel>CVV</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="123"
+                            {...field}
+                            onChange={(e) => {
+                              field.onChange(e);
+                              handleInputChange("cvv", e.target.value);
+                            }}
+                            maxLength={3}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </div>
-              )}
-            </form>
-          </Form>
+                <Button className="w-full bg-[#06196C] hover:bg-[#050E3A] text-white">
+                  {loading ? <Loader2 className="animate-spin" /> : "Pagar"}
+                </Button>
+                {error && (
+                  <div className="text-red-500 text-center">
+                    Ocurrió un error al procesar el pago, por favor intenta
+                    nuevamente.
+                  </div>
+                )}
+              </form>
+            </Form>
+          </div>
         </div>
       </div>
     </div>
